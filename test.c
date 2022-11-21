@@ -16,7 +16,7 @@ char create_buffer()
 int get_soket_and_bind()
 {
         struct sockaddr_in socket_service;
-    int udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
+    int udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 if (udp_socket == -1)
     {
         perror("error ");
@@ -35,6 +35,10 @@ if (return_code == -1)
         perror("error return_code");
     }
 char ptr_on_buff=create_buffer(); 
+
+fgets(&ptr_on_buff,254,stdin);
+
+printf("them ptr_on_buff = %s", &ptr_on_buff);
 return 0;
 }
 int get_hook()
@@ -49,8 +53,7 @@ int main()
         printf("bind socket sucsefull \n");
     
     }
-        else
-    {
+        else {
         perror("bind error: \n");
     }
 // get_message();
@@ -59,4 +62,5 @@ int main()
 
 // }
 return 0;
+
 }
