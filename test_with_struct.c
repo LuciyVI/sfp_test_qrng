@@ -5,20 +5,21 @@
 #include <netinet/udp.h>
 #include <string.h>
 #include <malloc.h>
+#include <pcap.h>
 
 struct get_network_settings
 {
     int udp_socket;
-    char *ptr_buff;
-    struct sockaddr_in *ptr_on_sockaddr_in;
+    char ptr_buff[1024];
+    int *ptr_on_sockaddr_in;
     int *len;
-    
+    int size_struct;
 
 };
 
 char create_buffer()
 {
-    char buff[256]=" ";
+    char buff[32]=" ";
     printf("buff now=%s \n",buff);
     return *buff;
 }
@@ -39,28 +40,53 @@ socket_service.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 socket_service.sin_port =  htons(7999);
 int len=sizeof(socket_service);
 get_set_net->udp_socket=udp_socket;
-get_set_net->ptr_on_sockaddr_in= ptr_socket_service;
+get_set_net->ptr_buff[1]=" Hello";
+// printf("Buff in socket_and_bind : %s",&get_set_net->ptr_buff);
+get_set_net->ptr_on_sockaddr_in=ptr_socket_service;
+// printf("\nPTR on sockaddr socket in get_socket_and_bind: %ld \n ", &ptr_socket_service);
+// printf("\nPTR on sockaddr socket in get_socket_and_bind: %ld \n ", get_set_net->ptr_on_sockaddr_in);
 get_set_net->len=&len;
-printf("ptr_socket_service=%ld",*ptr_socket_service);
 int return_code = bind(udp_socket,(struct sockaddr  *) &socket_service ,len);
 if (return_code == -1)
     {
         perror("error return_code");
     }
+if (return_code = listen(get_set_net->udp_socket,4)<0)
+    {
+        perror("error return_code");
+    }
 
 }
-int _Messages(struct get_network_settings *get_set_net)
+int _Messages(struct get_network_settings *get_set_net,int ptr_on_count)
 {   
-    printf("UDP socket in main(): %d", get_set_net->udp_socket);
-    printf("UDP socket in main(): %s", get_set_net->ptr_buff);
-    printf("UDP socket in main(): %ld" , sizeof(&get_set_net));
-    recvfrom(get_set_net->udp_socket,get_set_net->ptr_buff,sizeof(get_set_net->ptr_buff),MSG_WAITALL,get_set_net->ptr_on_sockaddr_in,get_set_net->len);
     
+    // printf("\nUDP socket in _Messages: %d \n", get_set_net->udp_socket);
+    // printf("\nBuff socket in main(): %s \n ", get_set_net->ptr_buff);
+    // printf("\nPTR on sockaddr socket in main(): %s \n ", get_set_net->ptr_on_sockaddr_in);
+    // printf("\nUDP socket in main(): %ld \n" , sizeof(get_set_net));
+    get_set_net->ptr_buff[1]=" ";
+
+    switch(recv(get_set_net->udp_socket,get_set_net->ptr_buff,sizeof(get_set_net->ptr_buff),MSG_WAITALL))
+    {
+    
+            case 32 :
+                
+                printf("message_in buff received \n %s", get_set_net->ptr_buff);
+                break;
+            // case 26 :
+            //     break;
+            // default:
+            //     break; 
+    }
+return 0;
 }
+
 
 int main()
 {
 struct get_network_settings get_net_set;
+get_net_set.size_struct=sizeof(get_net_set);
+printf("\n size : %d\n",get_net_set.size_struct);
 memset(&get_net_set, 0, sizeof(get_net_set));
 get_socket_and_bind(&get_net_set);
         if ((get_net_set.udp_socket)>0)
@@ -71,10 +97,16 @@ get_socket_and_bind(&get_net_set);
         else {
         perror("bind error: \n");
     }
+int _messages_count=0;
+int *ptr_on_count = &_messages_count;
 do
 {
-    perror("\n error in _Message: \n ");
-}while (_Messages(&get_net_set)>0);
+    //  printf("message = %d \n",_messages_count); 
+    // printf("message = %s \n",&get_net_set.ptr_buff);
+    _Messages(&get_net_set, &_messages_count);
+    _messages_count++;
+    printf("message now count: %d \n", _messages_count);
+}while (1);
 return 0;
 
 }
