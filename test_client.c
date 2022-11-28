@@ -5,7 +5,7 @@
 #include <netinet/udp.h>
 #include <string.h>
 #include <malloc.h>
-#include <pcap.h>
+#include <pcap/pcap.h>
 
 void get_socket_and_bind()
 
@@ -91,6 +91,10 @@ switch(number_templete_packet)
     //     sendto(udp_socket,message,sizeof(message),MSG_PEEK,(struct sockaddr  *) &socket_service,len);
 }
 // sendto(udp_socket,message,sizeof(message),MSG_EOR,(struct sockaddr  *) &socket_service,len);
+}
+int get_ip()
+{
+
 }
 void main()
 {

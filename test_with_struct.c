@@ -5,8 +5,9 @@
 #include <netinet/udp.h>
 #include <string.h>
 #include <malloc.h>
-#include <pcap.h>
-
+#include <pcap/pcap.h>
+#include <arpa/inet.h>
+// #define DEBUG
 struct get_network_settings
 {
     int udp_socket;
@@ -14,13 +15,16 @@ struct get_network_settings
     int *ptr_on_sockaddr_in;
     int *len;
     int size_struct;
+    int *device_name;
 
 };
 
 char create_buffer()
 {
     char buff[32]=" ";
+#ifdef DEBUG
     printf("buff now=%s \n",buff);
+#endif
     return *buff;
 }
 void get_socket_and_bind(struct get_network_settings *get_set_net)
@@ -36,7 +40,7 @@ if (udp_socket == -1)
 memset(&socket_service, 0, sizeof(socket_service)); 
 
 socket_service.sin_family = AF_INET;
-socket_service.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+socket_service.sin_addr.s_addr = inet_addr("89.208.103.217");
 socket_service.sin_port =  htons(7999);
 int len=sizeof(socket_service);
 get_set_net->udp_socket=udp_socket;
@@ -51,28 +55,29 @@ if (return_code == -1)
     {
         perror("error return_code");
     }
-if (return_code = listen(get_set_net->udp_socket,4)<0)
-    {
-        perror("error return_code");
-    }
+// if (return_code = listen(get_set_net->udp_socket,4)<0)
+//     {
+//         perror("error return_code");
+//     }
 
 }
 int _Messages(struct get_network_settings *get_set_net,int ptr_on_count)
 {   
-    
-    // printf("\nUDP socket in _Messages: %d \n", get_set_net->udp_socket);
-    // printf("\nBuff socket in main(): %s \n ", get_set_net->ptr_buff);
-    // printf("\nPTR on sockaddr socket in main(): %s \n ", get_set_net->ptr_on_sockaddr_in);
-    // printf("\nUDP socket in main(): %ld \n" , sizeof(get_set_net));
+#ifdef DEBUG    
+    printf("\nUDP socket in _Messages: %d \n", get_set_net->udp_socket);
+    printf("\nBuff socket in main(): %s \n ", get_set_net->ptr_buff);
+    printf("\nPTR on sockaddr socket in main(): %s \n ", get_set_net->ptr_on_sockaddr_in);
+    printf("\nUDP socket in main(): %ld \n" , sizeof(get_set_net));
+#endif
     get_set_net->ptr_buff[1]=" ";
 
     switch(recv(get_set_net->udp_socket,get_set_net->ptr_buff,sizeof(get_set_net->ptr_buff),MSG_WAITALL))
     {
     
-            case 32 :
+            // case 32 :
                 
-                printf("message_in buff received \n %s", get_set_net->ptr_buff);
-                break;
+                
+                // break;
             // case 26 :
             //     break;
             // default:
@@ -81,32 +86,58 @@ int _Messages(struct get_network_settings *get_set_net,int ptr_on_count)
 return 0;
 }
 
+// int find_dev_name(struct get_network_settings *get_net_set)
+// {
+//     char *device; 
+//     char error_buffer[64]; 
 
+    
+//     get_set_net->device_name = pcap_lookupdev(error_buffer);
+//     // get_set_net->device_name = 
+//     if (device == NULL) {
+        
+//         printf("\n \n Error finding device: %s\n", error_buffer);
+        
+//         return -1;
+//     }else{
+
+//         printf("\n \n Network device found: %s\n", device);
+    
+//     }
+// return device;
+// }
 int main()
 {
+
 struct get_network_settings get_net_set;
 get_net_set.size_struct=sizeof(get_net_set);
 printf("\n size : %d\n",get_net_set.size_struct);
 memset(&get_net_set, 0, sizeof(get_net_set));
+
 get_socket_and_bind(&get_net_set);
         if ((get_net_set.udp_socket)>0)
     {
-        printf("\n bind socket sucsefull \n");
+        printf("\n+=======================+\n+ bind socket sucsefull +\n+=======================+\n");
     
     }
         else {
         perror("bind error: \n");
     }
+// find_dev_name(&get_net_set);
+
 int _messages_count=0;
 int *ptr_on_count = &_messages_count;
+
 do
 {
     //  printf("message = %d \n",_messages_count); 
     // printf("message = %s \n",&get_net_set.ptr_buff);
     _Messages(&get_net_set, &_messages_count);
     _messages_count++;
-    printf("message now count: %d \n", _messages_count);
+    printf("message count: %d \n", _messages_count);
+    printf("\n message_in buff received \n %s", get_net_set.ptr_buff);
 }while (1);
+
 return 0;
 
 }
